@@ -11,24 +11,28 @@
       padding: 0;
       background: #f0f0f0;
       font-family: Arial, sans-serif;
-      overflow: auto; /* ✅ aktifkan scroll penuh */
+      overflow: auto;
       height: 100%;
       width: 100%;
-      justify-content: center;
+      display: flex;             
+      justify-content: center;   
     }
 
-    /* container utama melebar bebas */
+    /* container utama di tengah layar */
     #pdf-container {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      align-items: center;        
+      justify-content: center;
       padding: 20px;
-      width: max-content; /* ✅ biar lebar sesuai konten */
-      margin: 0;
+      width: 100%;
+      max-width: 1000px;          
+      box-sizing: border-box;
     }
 
-    /* canvas tampil natural */
     canvas {
       display: block;
-      margin: 0 auto 20px auto; /* jarak antar halaman */
+      margin-bottom: 20px;
       border: 1px solid #ccc;
       background-color: white;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -42,7 +46,6 @@
       font-size: 14px;
     }
 
-    /* Overlay hitam penuh */
     #blackout {
       position: fixed;
       inset: 0;
@@ -57,7 +60,6 @@
       pointer-events: all;
     }
 
-    /* Popup peringatan */
     #warning-popup {
       position: fixed;
       top: 50%;
@@ -107,8 +109,6 @@
 
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-
-        // tampil natural tanpa batas tengah
         canvas.style.width = viewport.width / deviceScale + "px";
         canvas.style.height = viewport.height / deviceScale + "px";
 
@@ -131,7 +131,9 @@
       }
       currentPage = endPage + 1;
       loadingDiv.textContent =
-        currentPage > pdfDoc.numPages ? "✅ Semua halaman selesai dimuat." : "⬇️ Scroll ke bawah untuk lanjut...";
+        currentPage > pdfDoc.numPages
+          ? "✅ Semua halaman selesai dimuat."
+          : "⬇️ Scroll ke bawah untuk lanjut...";
     }
 
     pdfjsLib.getDocument(url).promise.then(pdf => {
