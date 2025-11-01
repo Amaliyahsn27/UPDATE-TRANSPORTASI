@@ -111,8 +111,6 @@
 
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-
-        // tampil natural tanpa batas tengah
         canvas.style.width = viewport.width / deviceScale + "px";
         canvas.style.height = viewport.height / deviceScale + "px";
 
@@ -135,7 +133,7 @@
       }
       currentPage = endPage + 1;
       loadingDiv.textContent =
-        currentPage > pdfDoc.numPages ?;
+        currentPage > pdfDoc.numPages ? "✅ Semua halaman selesai dimuat." : "⬇️ Scroll ke bawah untuk lanjut...";
     }
 
     pdfjsLib.getDocument(url).promise.then(pdf => {
