@@ -51,31 +51,9 @@
       transition: transform 0.2s ease;
     }
 
+    /* Tombol zoom disembunyikan sepenuhnya */
     #controls {
-      position: fixed;
-      top: 15px;
-      right: 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      padding: 8px 10px;
-      z-index: 1000;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    button {
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 6px 10px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    button:hover {
-      background: #0056b3;
+      display: none;
     }
 
     #blackout {
@@ -114,6 +92,7 @@
     <div id="pdf-container"></div>
   </div>
 
+  <!-- Tombol zoom disembunyikan -->
   <div id="controls">
     <button id="zoom-out">-</button>
     <span id="zoom-level">100%</span>
@@ -188,24 +167,7 @@
       }
     });
 
-    function updateZoomText() {
-      zoomLevelSpan.textContent = Math.round(scaleFactor * 100) + "%";
-    }
-
-    document.getElementById("zoom-in").addEventListener("click", () => {
-      if (scaleFactor < maxScale) {
-        scaleFactor += 0.2;
-        reloadPDF();
-      }
-    });
-
-    document.getElementById("zoom-out").addEventListener("click", () => {
-      if (scaleFactor > minScale) {
-        scaleFactor -= 0.2;
-        reloadPDF();
-      }
-    });
-
+    // fungsi zoom tetap aktif tapi tombol disembunyikan
     async function reloadPDF() {
       const centerX = wrapper.scrollLeft + wrapper.clientWidth / 2;
       const centerY = wrapper.scrollTop + wrapper.clientHeight / 2;
@@ -213,7 +175,6 @@
 
       container.innerHTML = "";
       currentPage = 1;
-      updateZoomText();
       await renderBatch();
 
       const newCenterX = centerX * (scaleFactor / oldScale);
@@ -222,15 +183,7 @@
       wrapper.scrollTop = newCenterY - wrapper.clientHeight / 2;
     }
 
-    function triggerBlackout() {
-      blackout.classList.add("active");
-      popup.style.display = "block";
-      setTimeout(() => {
-        blackout.classList.remove("active");
-        popup.style.display = "none";
-      }, 4000);
-    }
-
+    // Zoom via keyboard
     document.addEventListener("keydown", e => {
       const key = e.key.toLowerCase();
       if ((e.ctrlKey && ["s", "p", "u", "c", "x", "a"].includes(key)) || key === "f12") {
@@ -241,7 +194,32 @@
         e.preventDefault();
         triggerBlackout();
       }
+
+      // Zoom in/out pakai Ctrl + atau Ctrl -
+      if (e.ctrlKey && (key === "=" || key === "+")) {
+        e.preventDefault();
+        if (scaleFactor < maxScale) {
+          scaleFactor += 0.2;
+          reloadPDF();
+        }
+      }
+      if (e.ctrlKey && key === "-") {
+        e.preventDefault();
+        if (scaleFactor > minScale) {
+          scaleFactor -= 0.2;
+          reloadPDF();
+        }
+      }
     });
+
+    function triggerBlackout() {
+      blackout.classList.add("active");
+      popup.style.display = "block";
+      setTimeout(() => {
+        blackout.classList.remove("active");
+        popup.style.display = "none";
+      }, 4000);
+    }
 
     let visibilityTimer;
     document.addEventListener("visibilitychange", () => {
