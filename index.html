@@ -78,15 +78,6 @@
       background: #0056b3;
     }
 
-    .loading {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: #666;
-      font-size: 14px;
-    }
-
     #blackout {
       position: fixed;
       inset: 0;
@@ -121,7 +112,6 @@
 
   <div id="pdf-wrapper">
     <div id="pdf-container"></div>
-    <div id="loading" class="loading">Memuat halaman...</div>
   </div>
 
   <div id="controls">
@@ -141,7 +131,6 @@
 
     const container = document.getElementById("pdf-container");
     const wrapper = document.getElementById("pdf-wrapper");
-    const loadingDiv = document.getElementById("loading");
     const zoomLevelSpan = document.getElementById("zoom-level");
     const blackout = document.getElementById("blackout");
     const popup = document.getElementById("warning-popup");
@@ -156,52 +145,35 @@
     async function renderPage(pageNum) {
       const page = await pdfDoc.getPage(pageNum);
 
-      // Dapatkan ukuran asli halaman
       const baseViewport = page.getViewport({ scale: 1 });
       const deviceScale = window.devicePixelRatio || 1;
 
-      // Pastikan kualitas tinggi dengan mempertimbangkan resolusi layar dan zoom
       const scale = scaleFactor * deviceScale * 1.5;
       const viewport = page.getViewport({ scale });
 
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d", { alpha: false });
 
-      // Gunakan ukuran tinggi resolusi
-      const outputScale = deviceScale;
       canvas.width = viewport.width;
       canvas.height = viewport.height;
+      canvas.style.width = (viewport.width / deviceScale) + "px";
+      canvas.style.height = (viewport.height / deviceScale) + "px";
 
-      // Sesuaikan ukuran tampil (CSS pixel)
-      canvas.style.width = (viewport.width / outputScale) + "px";
-      canvas.style.height = (viewport.height / outputScale) + "px";
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.scale(1, 1);
-
-      const renderContext = {
-        canvasContext: ctx,
-        viewport: viewport,
-      };
-
+      const renderContext = { canvasContext: ctx, viewport: viewport };
       container.appendChild(canvas);
       await page.render(renderContext).promise;
     }
 
     async function renderBatch() {
       if (!pdfDoc) return;
-      loadingDiv.style.display = "block";
       const endPage = Math.min(currentPage + batchSize - 1, pdfDoc.numPages);
-
       for (let i = currentPage; i <= endPage; i++) {
         await renderPage(i);
       }
-
       currentPage = endPage + 1;
-      loadingDiv.textContent =
-        currentPage > pdfDoc.numPages
-          ? "✅ Semua halaman selesai dimuat."
-          : "⬇️ Scroll atau zoom untuk lanjut...";
     }
 
     pdfjsLib.getDocument(url).promise.then(pdf => {
