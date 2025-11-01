@@ -26,20 +26,23 @@
       height: 100%;
       max-width: 100%;
       max-height: 100%;
-      overflow: auto;           /* ✅ bisa geser semua arah */
-      display: flex;
-      justify-content: center;  /* ✅ pdf di tengah horizontal */
-      align-items: center;      /* ✅ pdf di tengah vertical */
+      overflow: auto;           /* ✅ scroll bebas */
       background: #ddd;
+      display: flex;
+      justify-content: flex-start;  /* ✅ mulai dari kiri, biar nggak ada jarak kanan */
+      align-items: flex-start;      /* ✅ mulai dari atas */
     }
 
+    /* container utama PDF */
     #pdf-container {
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: center;          /* ✅ halaman tetap center di area konten */
       justify-content: center;
-      background: #eee;
+      margin: 0 auto;               /* ✅ jika PDF kecil, tetap tengah */
       padding: 20px;
+      background: #eee;
+      min-width: fit-content;       /* ✅ hilangkan ruang kosong kanan */
     }
 
     canvas {
@@ -143,6 +146,7 @@
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
     const container = document.getElementById("pdf-container");
+    const wrapper = document.getElementById("pdf-wrapper");
     const loadingDiv = document.getElementById("loading");
     const zoomLevelSpan = document.getElementById("zoom-level");
     const blackout = document.getElementById("blackout");
@@ -199,7 +203,7 @@
     });
 
     // scroll detect (lazy load)
-    document.getElementById("pdf-wrapper").addEventListener("scroll", (e) => {
+    wrapper.addEventListener("scroll", (e) => {
       const { scrollTop, scrollHeight, clientHeight } = e.target;
       if (scrollTop + clientHeight >= scrollHeight - 200) {
         if (currentPage <= pdfDoc.numPages) renderBatch();
@@ -226,10 +230,20 @@
     });
 
     async function reloadPDF() {
+      const centerX = wrapper.scrollLeft + wrapper.clientWidth / 2;
+      const centerY = wrapper.scrollTop + wrapper.clientHeight / 2;
+      const oldScale = scaleFactor;
+
       container.innerHTML = "";
       currentPage = 1;
       updateZoomText();
       await renderBatch();
+
+      // jaga agar tetap di posisi tengah saat zoom
+      const newCenterX = centerX * (scaleFactor / oldScale);
+      const newCenterY = centerY * (scaleFactor / oldScale);
+      wrapper.scrollLeft = newCenterX - wrapper.clientWidth / 2;
+      wrapper.scrollTop = newCenterY - wrapper.clientHeight / 2;
     }
 
     // --- keamanan tetap dipertahankan ---
